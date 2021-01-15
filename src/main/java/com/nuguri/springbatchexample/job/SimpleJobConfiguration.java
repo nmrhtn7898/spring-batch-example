@@ -7,6 +7,8 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -48,12 +50,18 @@ public class SimpleJobConfiguration {
     public Step simpleStep2(@Value("#{jobParameters[requestDate]}") String requestDate) {
         return stepBuilderFactory
                 .get("simpleStep2")
-                .tasklet((contribution, chunkContext) -> {
-                    log.info(">>>>>>>>> this is step2");
-                    log.info(">>>>>>>>> requestDate : {}", requestDate);
-                    return RepeatStatus.FINISHED;
-                })
+                .tasklet(scopeStep2Tasklet(null))
                 .build();
+    }
+
+    @Bean
+    @StepScope
+    public Tasklet scopeStep2Tasklet(@Value("#{jobParameters[requestDate]}") String requestDate) {
+        return ((contribution, chunkContext) -> {
+            log.info(">>>>>>>>> this is step2");
+            log.info(">>>>>>>>> requestDate : {}", requestDate);
+            return RepeatStatus.FINISHED;
+        });
     }
 
 }
