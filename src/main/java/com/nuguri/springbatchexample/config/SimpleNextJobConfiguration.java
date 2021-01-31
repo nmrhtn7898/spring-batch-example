@@ -1,4 +1,4 @@
-package com.nuguri.springbatchexample.job;
+package com.nuguri.springbatchexample.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

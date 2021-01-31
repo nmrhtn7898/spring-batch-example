@@ -1,4 +1,4 @@
-package com.nuguri.springbatchexample.job;
+package com.nuguri.springbatchexample.config;
 
 import com.nuguri.springbatchexample.entity.Pay;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +20,9 @@ import javax.persistence.EntityManagerFactory;
 @Slf4j
 @RequiredArgsConstructor
 @Configuration
-public class ProcessorConvertJobConfiguration {
+public class ProcessorNullJobConfiguration {
 
-    public static final String JOB_NAME = "processorConvertBatch";
+    public static final String JOB_NAME = "processorNullBatch";
 
     public static final String BEAN_PREFIX = JOB_NAME + "_";
 
@@ -35,7 +35,7 @@ public class ProcessorConvertJobConfiguration {
     @Value("${chunkSize:1000}")
     private int chunkSize;
 
-    @Bean(JOB_NAME)
+    @Bean
     public Job job() {
         return jobBuilderFactory
                 .get(JOB_NAME)
@@ -44,18 +44,16 @@ public class ProcessorConvertJobConfiguration {
                 .build();
     }
 
-    @Bean(BEAN_PREFIX + "step")
     public Step step() {
         return stepBuilderFactory
                 .get(BEAN_PREFIX + "step")
-                .<Pay, String>chunk(chunkSize)
+                .<Pay, Pay>chunk(chunkSize)
                 .reader(reader())
                 .processor(processor())
                 .writer(writer())
                 .build();
     }
 
-    @Bean
     public JpaPagingItemReader<Pay> reader() {
         return new JpaPagingItemReaderBuilder<Pay>()
                 .name(BEAN_PREFIX + "reader")
@@ -65,14 +63,12 @@ public class ProcessorConvertJobConfiguration {
                 .build();
     }
 
-    @Bean
-    public ItemProcessor<Pay, String> processor() {
-        return Pay::getTxName;
+    public ItemProcessor<Pay, Pay> processor() {
+        return pay -> pay.getId() % 2 == 0 ? null : pay;
     }
 
-
-    private ItemWriter<String> writer() {
-        return items -> items.forEach(item -> log.info("Pay TxName={}", item));
+    private ItemWriter<Pay> writer() {
+        return items -> items.forEach(item -> log.info("Pay TxName={}", item.getTxName()));
     }
 
 }

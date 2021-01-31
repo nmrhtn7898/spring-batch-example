@@ -1,4 +1,4 @@
-package com.nuguri.springbatchexample.job;
+package com.nuguri.springbatchexample.config;
 
 import com.nuguri.springbatchexample.entity.Pay;
 import lombok.RequiredArgsConstructor;

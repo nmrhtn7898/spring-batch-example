@@ -1,4 +1,4 @@
-package com.nuguri.springbatchexample.job;
+package com.nuguri.springbatchexample.config;
 
 import com.nuguri.springbatchexample.entity.Pay;
 import lombok.RequiredArgsConstructor;
@@ -11,18 +11,20 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JpaPagingItemReader;
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
+import org.springframework.batch.item.support.CompositeItemProcessor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.persistence.EntityManagerFactory;
+import java.util.Arrays;
 
 @Slf4j
 @RequiredArgsConstructor
 @Configuration
-public class ProcessorNullJobConfiguration {
+public class ProcessorCompositeJobConfiguration {
 
-    public static final String JOB_NAME = "processorNullBatch";
+    public static final String JOB_NAME = "processorCompositeBatch";
 
     public static final String BEAN_PREFIX = JOB_NAME + "_";
 
@@ -35,7 +37,7 @@ public class ProcessorNullJobConfiguration {
     @Value("${chunkSize:1000}")
     private int chunkSize;
 
-    @Bean
+    @Bean(JOB_NAME)
     public Job job() {
         return jobBuilderFactory
                 .get(JOB_NAME)
@@ -47,9 +49,9 @@ public class ProcessorNullJobConfiguration {
     public Step step() {
         return stepBuilderFactory
                 .get(BEAN_PREFIX + "step")
-                .<Pay, Pay>chunk(chunkSize)
+                .<Pay, String>chunk(chunkSize)
                 .reader(reader())
-                .processor(processor())
+                .processor(compositeItemProcessor())
                 .writer(writer())
                 .build();
     }
@@ -63,12 +65,22 @@ public class ProcessorNullJobConfiguration {
                 .build();
     }
 
-    public ItemProcessor<Pay, Pay> processor() {
-        return pay -> pay.getId() % 2 == 0 ? null : pay;
+    public CompositeItemProcessor compositeItemProcessor() {
+        CompositeItemProcessor processor = new CompositeItemProcessor<>();
+        processor.setDelegates(Arrays.asList(processor(), processor2()));
+        return processor;
     }
 
-    private ItemWriter<Pay> writer() {
-        return items -> items.forEach(item -> log.info("Pay TxName={}", item.getTxName()));
+    public ItemProcessor<Pay, String> processor() {
+        return Pay::getTxName;
+    }
+
+    public ItemProcessor<String, String> processor2() {
+        return name -> "안녕하세요. " + name + "입니다.";
+    }
+
+    private ItemWriter<String> writer() {
+        return items -> items.forEach(item -> log.info("Pay txName={}", item));
     }
 
 }
