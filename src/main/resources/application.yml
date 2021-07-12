@@ -3,9 +3,9 @@ spring:
     job:
       names: ${job.name:NONE}
   datasource:
-    url: jdbc:mysql://bakery-web-db.cjdgxspxjowi.ap-northeast-2.rds.amazonaws.com:3306/example?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/example?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    password: 1q2w3e4r%T
+    password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     generate-ddl: true
